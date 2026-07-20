@@ -10,13 +10,24 @@ function nodeId(path: string): string {
   return path.replace(/[/.]/g, '_');
 }
 
+function dirOf(path: string): string {
+  const idx = path.lastIndexOf('/');
+  return idx === -1 ? '' : path.slice(0, idx);
+}
+
 function violatingPaths(checkResult: CheckResult): Set<string> {
   const paths = new Set<string>();
   for (const d of [...checkResult.errors, ...checkResult.warnings]) paths.add(d.primary.file);
   return paths;
 }
 
-/** Exports exactly one function, satisfying R4. Any label-escaping/id-computation helpers stay internal to this file. */
+/**
+ * Exports exactly one function, satisfying R4. Any label-escaping/id-computation helpers stay
+ * internal to this file. Nodes are clustered into one Mermaid `subgraph` per containing directory
+ * so related files stay visually grouped instead of scattering across the whole flowchart —
+ * without this, a real repo's fan-out (a hub imported by several callers, several rule/render
+ * spokes each imported by several commands) reads as an undifferentiated hairball.
+ */
 export function renderMermaid(graph: Graph, checkResult: CheckResult, opts: { noTimestamp: boolean }): string {
   void opts; // the .mmd itself never contains a timestamp — only render/html.ts's header does
   const violating = violatingPaths(checkResult);
@@ -28,10 +39,24 @@ export function renderMermaid(graph: Graph, checkResult: CheckResult, opts: { no
 
   const lines = ['flowchart TD'];
 
+  const groups = new Map<string, typeof nodes>();
   for (const node of nodes) {
-    const id = nodeId(node.path);
-    lines.push(`  ${id}["${node.path}"]`);
+    const dir = dirOf(node.path);
+    if (!groups.has(dir)) groups.set(dir, []);
+    groups.get(dir)!.push(node);
   }
+
+  for (const node of groups.get('') ?? []) {
+    lines.push(`  ${nodeId(node.path)}["${node.path}"]`);
+  }
+  for (const dir of [...groups.keys()].filter((d) => d !== '').sort()) {
+    lines.push(`  subgraph ${nodeId(dir)}_dir["${dir}"]`);
+    for (const node of groups.get(dir)!) {
+      lines.push(`    ${nodeId(node.path)}["${node.path}"]`);
+    }
+    lines.push('  end');
+  }
+
   for (const edge of edges) {
     lines.push(`  ${nodeId(edge.from)} --> ${nodeId(edge.to)}`);
   }

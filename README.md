@@ -1,6 +1,6 @@
 # spokes
 
-**v1.0.2** — A dependency-shape linter that draws your architecture.
+**v1.0.3** — A dependency-shape linter that draws your architecture.
 
 Agents working in a `spokes`-clean repo can load exactly one file plus one interface to act
 safely, because blast radius is bounded by construction — a hub has at most one caller, a spoke

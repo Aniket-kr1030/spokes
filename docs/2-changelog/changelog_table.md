@@ -2,12 +2,16 @@
 
 | Version | Week | Object |
 |---|---|---|
+| `1.0.3` | 1 | Fix graph structure and navigability (clustering, click-to-focus, line routing) |
 | `1.0.2` | 1 | Fix scroll-to-zoom sensitivity in spokes-graph.html |
 | `1.0.1` | 1 | Fix spokes-graph.html visibility and navigability |
 | `1.0.0` | 1 | Implement spokes v1.0.0: dependency-shape linter (M0-M2) |
 
 ## Changelog Summary
 
+- **v1.0.3** (Week 1, 20-07-2026) — Patch. Directory-based subgraph clustering, click-to-focus
+  highlighting (dim everything except a clicked file's direct connections), and right-angle
+  edge routing to replace the tangled default curve style. See `docs/2-changelog/w1_v1.0.3.md`.
 - **v1.0.2** (Week 1, 20-07-2026) — Patch. Fixed scroll-to-zoom feeling too sensitive (fixed
   10%-per-event step) and always anchoring at the top-left corner instead of the cursor. See
   `docs/2-changelog/w1_v1.0.2.md`.

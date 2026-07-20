@@ -1,6 +1,6 @@
 {
   "name": "spokes",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A dependency-shape linter that draws your architecture",
   "type": "module",
   "license": "MIT",
