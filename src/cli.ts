@@ -15,7 +15,7 @@ import { run as runSuggest } from './suggest.js';
 import { run as runExplain } from './explain.js';
 import type { CheckResult, CheckStats, Diagnostic, Graph, SpokesConfig } from './types.js';
 
-const BUG_REPORT_URL = 'https://github.com/spokes/spokes/issues/new';
+const BUG_REPORT_URL = 'https://github.com/Aniket-kr1030/spokes/issues/new';
 
 function toPosixRelative(repoRoot: string, targetPath: string): string {
   const abs = resolve(repoRoot, targetPath);

@@ -4,6 +4,14 @@
   "description": "A dependency-shape linter that draws your architecture",
   "type": "module",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Aniket-kr1030/spokes.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Aniket-kr1030/spokes/issues"
+  },
+  "homepage": "https://github.com/Aniket-kr1030/spokes#readme",
   "engines": {
     "node": ">=20"
   },
