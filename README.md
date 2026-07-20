@@ -22,6 +22,7 @@ every diagram is deterministic: same repo in, byte-identical output out.
 ## Contents
 
 - [What this is for](#what-this-is-for)
+- [For AI agents](#for-ai-agents)
 - [Core concepts](#core-concepts)
 - [Install](#install)
 - [Quick start](#quick-start)
@@ -65,6 +66,73 @@ It's a poor fit for:
   linter than benefiting from it. Mark those files `unmarked` (the default) rather than forcing
   them into a shape they don't want.
 - **Non-TS/JS codebases.** v1 is TS/JS only (see [Roadmap](#roadmap)).
+
+## For AI agents
+
+The pitch above ("load one file plus one interface") is only real if an agent actually calls the
+tool as part of its edit loop, not just once at project setup. Concretely:
+
+- **Before editing a file** — `spokes explain path/to/file.ts` gives the blast radius in one
+  call: role, exact callers, exact dependencies, export list, rule status. A spoke with one
+  caller means the agent knows precisely which other file could break; no need to grep the repo.
+- **After making a change that adds an import** — `spokes check` (or `spokes check --json` for
+  structured output) catches the moment an edit turns a spoke into a de facto hub, *before* the
+  agent runs the test suite. It's cheap, fast, structural feedback that fires earlier than a
+  failing test would.
+- **For scoping a task** — `spokes-graph.mmd`, or `spokes check --json`'s `stats`, gives a
+  compact, machine-readable view of what's relevant to a subsystem instead of grepping the whole
+  repo. Because a spoke's out-degree is ≤ 1, tracing "what does X depend on" is a short
+  deterministic chain, not an exponential fan-out — that boundedness is what actually limits how
+  much context an agent needs to load for a task.
+- **When it hits a cycle** — `spokes suggest` gives a deterministic extraction plan (new hub file
+  stub + rewiring diff) as a starting point, so "where should the shared code live" isn't a
+  judgment call the agent has to invent from scratch. It's a preview only — the agent still has
+  to write the code, and `--write` is deliberately unimplemented (exit 2 if invoked).
+
+### Integrating it into an agent's workflow
+
+**1. Point the agent at it via its instructions file.** Add a note to `CLAUDE.md` / `AGENTS.md` /
+`.cursorrules` (whatever your harness reads) telling the agent when to reach for `spokes` on its
+own, e.g.:
+
+```markdown
+## Dependency shape (spokes)
+This repo enforces hub/spoke import rules — see README.md. Before editing a file, run
+`npx spokes explain <path>` to see its role and callers. After adding an import, run
+`npx spokes check` before running tests; fix any error it reports rather than routing around it.
+```
+
+**2. Wire it into the harness's hook system, if it has one**, so the check runs whether or not
+the agent remembers to ask for it. Claude Code, for example, supports a `PostToolUse` hook that
+runs a shell command after matching tool calls and feeds the result back into context:
+
+```jsonc
+// .claude/settings.json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [{ "type": "command", "command": "npx spokes check" }]
+      }
+    ]
+  }
+}
+```
+
+(Check your specific harness's docs for its exact hook schema — the pattern of "run a command
+after an edit, surface non-zero exit to the model" is what matters, not this exact JSON shape.)
+
+**3. Gate it in CI regardless of how the code was written.** Agent-authored PRs go through the
+same `spokes check` step as human PRs (see [CI integration](#ci-integration)) — the hook above
+catches problems early, CI is the backstop that doesn't depend on the agent's harness being
+configured correctly.
+
+**4. If your stack already exposes tools to agents over MCP**, wrapping `spokes check --json` and
+`spokes explain` as MCP tools is a natural extension — the output is already structured JSON, so
+an agent can call it directly instead of shelling out and parsing text. This isn't shipped by
+`spokes` itself (v1 is a CLI, see [Roadmap](#roadmap)), but nothing about the JSON contract
+assumes CLI-only usage.
 
 ## Core concepts
 
