@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "errors": [
+    {
+      "code": "S003",
+      "message": "circular dependency (3 files)\n  cycle: src/a.ts → src/b.ts → src/c.ts → src/a.ts\n  closing edge: src/c.ts:1 imports './a'\n  help: run `spokes suggest` for an extraction plan.",
+      "primary": {
+        "file": "src/c.ts",
+        "line": 1,
+        "col": 1
+      },
+      "related": []
+    }
+  ],
+  "warnings": [],
+  "stats": {
+    "nodes": 3,
+    "edges": 3,
+    "hubs": 0,
+    "spokes": 3,
+    "unmarked": 0
+  }
+}

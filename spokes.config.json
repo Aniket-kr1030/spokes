@@ -1,0 +1,14 @@
+{
+  "$schema": "./schema.json",
+  "include": ["src/**/*.{ts,tsx,js,jsx,mts,cts,mjs,cjs}"],
+  "exclude": ["**/*.test.*", "**/*.spec.*", "**/node_modules/**", "**/dist/**"],
+  "roles": [
+    { "glob": "src/*.ts", "role": "hub" },
+    { "glob": "src/**", "role": "spoke" }
+  ],
+  "defaultRole": "unmarked",
+  "strictCycles": true,
+  "singleExport": "warn",
+  "typeOnlyEdges": "ignore",
+  "externalPackages": "ignore"
+}

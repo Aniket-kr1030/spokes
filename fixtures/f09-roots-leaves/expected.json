@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "errors": [],
+  "warnings": [],
+  "stats": {
+    "nodes": 7,
+    "edges": 6,
+    "hubs": 1,
+    "spokes": 6,
+    "unmarked": 0
+  }
+}

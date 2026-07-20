@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "spokes.config.json",
+  "type": "object",
+  "properties": {
+    "$schema": { "type": "string" },
+    "include": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "exclude": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "roles": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "glob": { "type": "string" },
+          "role": { "type": "string", "enum": ["hub", "spoke"] }
+        },
+        "required": ["glob", "role"]
+      }
+    },
+    "defaultRole": {
+      "type": "string",
+      "enum": ["unmarked", "spoke", "hub"]
+    },
+    "strictCycles": { "type": "boolean" },
+    "singleExport": {
+      "type": "string",
+      "enum": ["off", "warn", "error"]
+    },
+    "typeOnlyEdges": {
+      "type": "string",
+      "enum": ["ignore", "count"]
+    },
+    "externalPackages": {
+      "type": "string",
+      "enum": ["ignore"]
+    }
+  },
+  "additionalProperties": false
+}

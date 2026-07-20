@@ -1,0 +1,13 @@
+{
+  "include": ["src/**/*.ts"],
+  "exclude": [],
+  "roles": [
+    { "glob": "src/hubs/**", "role": "hub" },
+    { "glob": "src/**", "role": "spoke" }
+  ],
+  "defaultRole": "unmarked",
+  "strictCycles": true,
+  "singleExport": "warn",
+  "typeOnlyEdges": "ignore",
+  "externalPackages": "ignore"
+}

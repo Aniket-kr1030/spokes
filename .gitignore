@@ -1,0 +1,7 @@
+dist/
+node_modules/
+spokes-graph.mmd
+spokes-graph.html
+spokes-graph-*.mmd
+spokes-graph-*.html
+!fixtures/**/expected/**

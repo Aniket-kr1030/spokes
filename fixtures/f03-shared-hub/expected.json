@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "errors": [
+    {
+      "code": "S002",
+      "message": "hub has 2 incoming edges (max 1)\n  --> src/hubs/engine.ts\n  caller 1: src/admin-tools.ts:1\n  caller 2: src/app.ts:1\n  help: a hub must have at most one owner. Either give it a single owner,\n        or split it, or re-mark it as a spoke and reduce its dependencies.",
+      "primary": {
+        "file": "src/hubs/engine.ts",
+        "line": 1,
+        "col": 1
+      },
+      "related": [
+        {
+          "file": "src/admin-tools.ts",
+          "line": 1,
+          "col": 1
+        },
+        {
+          "file": "src/app.ts",
+          "line": 1,
+          "col": 1
+        }
+      ]
+    }
+  ],
+  "warnings": [],
+  "stats": {
+    "nodes": 3,
+    "edges": 2,
+    "hubs": 1,
+    "spokes": 2,
+    "unmarked": 0
+  }
+}

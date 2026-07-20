@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "errors": [
+    {
+      "code": "S001",
+      "message": "spoke has 3 outgoing edges (max 1)\n  --> src/service.ts\n  edge 1 → src/inventory-client.ts (imported at service.ts:2)\n  edge 2 → src/logger.ts           (imported at service.ts:3)\n  edge 3 → src/payment-client.ts   (imported at service.ts:1)\n  help: mark this file as a hub (`// @spokes hub`) if it is exclusively\n        owned by one caller, or route these through a shared hub file.",
+      "primary": {
+        "file": "src/service.ts",
+        "line": 1,
+        "col": 1
+      },
+      "related": [
+        {
+          "file": "src/service.ts",
+          "line": 2,
+          "col": 1
+        },
+        {
+          "file": "src/service.ts",
+          "line": 3,
+          "col": 1
+        },
+        {
+          "file": "src/service.ts",
+          "line": 1,
+          "col": 1
+        }
+      ]
+    }
+  ],
+  "warnings": [],
+  "stats": {
+    "nodes": 4,
+    "edges": 3,
+    "hubs": 0,
+    "spokes": 4,
+    "unmarked": 0
+  }
+}

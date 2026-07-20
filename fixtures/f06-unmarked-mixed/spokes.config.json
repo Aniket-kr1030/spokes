@@ -1,0 +1,10 @@
+{
+  "include": ["src/**/*.ts"],
+  "exclude": [],
+  "roles": [{ "glob": "src/marked/**", "role": "spoke" }],
+  "defaultRole": "unmarked",
+  "strictCycles": true,
+  "singleExport": "warn",
+  "typeOnlyEdges": "ignore",
+  "externalPackages": "ignore"
+}

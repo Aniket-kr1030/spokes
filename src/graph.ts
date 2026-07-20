@@ -1,0 +1,85 @@
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { renderMermaid } from './render/mermaid.js';
+import { renderDot } from './render/dot.js';
+import { renderHtml } from './render/html.js';
+import type { CheckResult, Edge, Graph, Node } from './types.js';
+
+interface GraphOpts {
+  format?: 'mermaid' | 'dot';
+  noTimestamp: boolean;
+  out?: string;
+}
+
+const MAX_NODES_PER_DIAGRAM = 300;
+
+function topLevelGroup(path: string): string {
+  const parts = path.split('/');
+  if (parts[0] === 'src' && parts.length > 2) return `${parts[0]}/${parts[1]}`;
+  return parts[0];
+}
+
+function subgraphFor(graph: Graph, paths: Set<string>): Graph {
+  const nodes = new Map<string, Node>();
+  for (const [p, n] of graph.nodes) if (paths.has(p)) nodes.set(p, n);
+  const edges: Edge[] = graph.edges.filter((e) => paths.has(e.from) && paths.has(e.to));
+  return { nodes, edges };
+}
+
+function overviewGraph(graph: Graph, groups: Map<string, Set<string>>): Graph {
+  const nodes = new Map<string, Node>();
+  for (const dir of groups.keys()) nodes.set(dir, { path: dir, role: 'unmarked', exports: [] });
+
+  const dirOf = new Map<string, string>();
+  for (const [dir, paths] of groups) for (const p of paths) dirOf.set(p, dir);
+
+  const edgeMap = new Map<string, Edge>();
+  for (const e of graph.edges) {
+    const fromDir = dirOf.get(e.from);
+    const toDir = dirOf.get(e.to);
+    if (!fromDir || !toDir || fromDir === toDir) continue;
+    const key = `${fromDir} ${toDir}`;
+    if (!edgeMap.has(key)) edgeMap.set(key, { from: fromDir, to: toDir, locations: [] });
+  }
+
+  return { nodes, edges: [...edgeMap.values()] };
+}
+
+/** Exports exactly one function, satisfying R4. */
+export function run(graph: Graph, checkResult: CheckResult, opts: GraphOpts): void {
+  const outDir = opts.out ?? '.';
+  mkdirSync(outDir, { recursive: true });
+
+  const writeOne = (baseName: string, g: Graph): void => {
+    const mmd = renderMermaid(g, checkResult, { noTimestamp: opts.noTimestamp });
+    writeFileSync(join(outDir, `${baseName}.mmd`), `${mmd}\n`, 'utf8');
+    const html = renderHtml(mmd, checkResult, { noTimestamp: opts.noTimestamp });
+    writeFileSync(join(outDir, `${baseName}.html`), html, 'utf8');
+    if (opts.format === 'dot') {
+      const dot = renderDot(g, checkResult);
+      writeFileSync(join(outDir, `${baseName}.dot`), `${dot}\n`, 'utf8');
+    }
+  };
+
+  const nodeCount = graph.nodes.size;
+  if (nodeCount <= MAX_NODES_PER_DIAGRAM) {
+    writeOne('spokes-graph', graph);
+    return;
+  }
+
+  const groups = new Map<string, Set<string>>();
+  for (const node of graph.nodes.values()) {
+    const dir = topLevelGroup(node.path);
+    if (!groups.has(dir)) groups.set(dir, new Set());
+    groups.get(dir)!.add(node.path);
+  }
+
+  console.log(
+    `spokes: ${nodeCount} nodes exceeds ${MAX_NODES_PER_DIAGRAM} — writing one diagram per top-level directory plus an overview.`,
+  );
+
+  for (const [dir, paths] of [...groups].sort((a, b) => (a[0] < b[0] ? -1 : 1))) {
+    writeOne(`spokes-graph-${dir.replace(/[/.]/g, '_')}`, subgraphFor(graph, paths));
+  }
+  writeOne('spokes-graph-overview', overviewGraph(graph, groups));
+}

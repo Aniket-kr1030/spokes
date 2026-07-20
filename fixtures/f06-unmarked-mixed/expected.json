@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "errors": [
+    {
+      "code": "S003",
+      "message": "circular dependency (2 files)\n  cycle: src/loose.ts → src/marked/a.ts → src/loose.ts\n  closing edge: src/marked/a.ts:1 imports '../loose'\n  help: run `spokes suggest` for an extraction plan.",
+      "primary": {
+        "file": "src/marked/a.ts",
+        "line": 1,
+        "col": 1
+      },
+      "related": []
+    }
+  ],
+  "warnings": [],
+  "stats": {
+    "nodes": 4,
+    "edges": 4,
+    "hubs": 0,
+    "spokes": 1,
+    "unmarked": 3
+  }
+}

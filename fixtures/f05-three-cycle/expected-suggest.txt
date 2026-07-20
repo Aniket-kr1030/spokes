@@ -1,0 +1,26 @@
+PREVIEW — not applied
+
+new file: src/shared.hub.ts
+  // @spokes hub
+  export type { a } from './TODO'; // TODO: fill in shared contract
+  export type { b } from './TODO'; // TODO: fill in shared contract
+  export type { c } from './TODO'; // TODO: fill in shared contract
+
+--- a/src/a.ts
++++ b/src/a.ts
+- import ... from './b';
++ import ... from './shared.hub';
+
+--- a/src/b.ts
++++ b/src/b.ts
+- import ... from './c';
++ import ... from './shared.hub';
+
+--- a/src/c.ts
++++ b/src/c.ts
+- import ... from './a';
++ import ... from './shared.hub';
+
+note: extraction resolves cycles caused by a shared contract. If these
+files are truly mutually recursive in logic, extraction only relocates
+the knot — consider merging the files or inverting one call instead.
