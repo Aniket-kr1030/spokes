@@ -1,6 +1,6 @@
 # spokes
 
-**v1.0.3** — A dependency-shape linter that draws your architecture.
+**v1.0.4** — A dependency-shape linter that draws your architecture.
 
 Agents working in a `spokes`-clean repo can load exactly one file plus one interface to act
 safely, because blast radius is bounded by construction — a hub has at most one caller, a spoke
@@ -148,8 +148,11 @@ assumes CLI-only usage.
 
 ## Install
 
+The npm package is named `spokes-ai-humanism` (the name `spokes` was already taken by an
+unrelated package) — but once installed, the CLI command itself is just `spokes`:
+
 ```sh
-npm install --save-dev spokes
+npm install --save-dev spokes-ai-humanism
 ```
 
 ## Quick start
@@ -159,6 +162,9 @@ npx spokes init    # write spokes.config.json
 npx spokes check   # run the checker
 npx spokes graph   # render spokes-graph.mmd + spokes-graph.html
 ```
+
+(`npx spokes` here resolves to `./node_modules/.bin/spokes`, created by the package's `bin` entry
+— it only works after the `npm install` step above, not as a zero-install one-liner.)
 
 `spokes init` writes a default config scoped to `src/**`. `spokes check` reports 0 errors on a
 fresh, all-unmarked repo (unmarked files are exempt from the degree rules) — you get real signal

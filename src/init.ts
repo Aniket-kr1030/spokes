@@ -4,7 +4,7 @@ import { join } from 'node:path';
 const CONFIG_FILENAME = 'spokes.config.json';
 
 const DEFAULT_CONFIG = {
-  $schema: './node_modules/spokes/schema.json',
+  $schema: './node_modules/spokes-ai-humanism/schema.json',
   include: ['src/**/*.{ts,tsx,js,jsx,mts,cts,mjs,cjs}'],
   exclude: ['**/*.test.*', '**/*.spec.*', '**/node_modules/**', '**/dist/**'],
   roles: [
