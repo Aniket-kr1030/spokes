@@ -102,8 +102,20 @@ export function renderHtml(mermaidSrc: string, checkResult: CheckResult, opts: {
 
   viewport.addEventListener('wheel', (e) => {
     e.preventDefault();
-    const factor = e.deltaY < 0 ? 1.1 : 1 / 1.1;
-    scale = Math.min(6, Math.max(0.05, scale * factor));
+    // Proportional to deltaY (not a fixed step per event) so trackpads' many small
+    // events zoom smoothly instead of jumping, and zoom is anchored under the cursor
+    // instead of the content's top-left corner, so the view doesn't jump around.
+    const rect = viewport.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    const zoomIntensity = 0.0015;
+    const factor = Math.exp(-e.deltaY * zoomIntensity);
+    const newScale = Math.min(6, Math.max(0.05, scale * factor));
+    const contentX = (mouseX - panX) / scale;
+    const contentY = (mouseY - panY) / scale;
+    panX = mouseX - contentX * newScale;
+    panY = mouseY - contentY * newScale;
+    scale = newScale;
     applyTransform();
   }, { passive: false });
 
