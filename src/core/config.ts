@@ -5,7 +5,7 @@ import type { SpokesConfig, RoleGlob, Role, SingleExportLevel, TypeOnlyEdges } f
 const CONFIG_FILENAME = 'spokes.config.json';
 
 const DEFAULTS: SpokesConfig = {
-  include: ['src/**/*.{ts,tsx,js,jsx,mts,cts,mjs,cjs}'],
+  include: ['src/**/*.{ts,tsx,js,jsx,mts,cts,mjs,cjs,py}'],
   exclude: ['**/*.test.*', '**/*.spec.*', '**/node_modules/**', '**/dist/**'],
   roles: [
     { glob: 'src/hubs/**', role: 'hub' },
@@ -23,10 +23,14 @@ function fail(schemaPath: string, reason: string): never {
   process.exit(2);
 }
 
+// Python repos have no package.json; pyproject.toml (or an already-present
+// spokes.config.json) marks the root just as well.
+const ROOT_MARKERS = [CONFIG_FILENAME, 'package.json', 'pyproject.toml'];
+
 function findRepoRoot(startDir: string): string {
   let dir = startDir;
   for (;;) {
-    if (existsSync(join(dir, 'package.json'))) return dir;
+    if (ROOT_MARKERS.some((marker) => existsSync(join(dir, marker)))) return dir;
     const parent = dirname(dir);
     if (parent === dir) return startDir;
     dir = parent;

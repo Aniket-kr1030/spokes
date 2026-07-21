@@ -1,6 +1,6 @@
 import type { Role, SpokesConfig } from '../types.js';
 
-const PRAGMA_RE = /^\s*(\/\/|\/\*)\s*@spokes\s+(hub|spoke)\b/i;
+const PRAGMA_RE = /^\s*(\/\/|\/\*|#)\s*@spokes\s+(hub|spoke)\b/i;
 
 function resolvePragma(fileContents: string): Role | undefined {
   const lines = fileContents.split(/\r?\n/, 5);

@@ -1,0 +1,20 @@
+PREVIEW — not applied
+
+new file: app/shared_hub.py
+  # @spokes hub
+  from .TODO import ping  # TODO: fill in shared contract
+  from .TODO import pong  # TODO: fill in shared contract
+
+--- a/app/cycle_a.py
++++ b/app/cycle_a.py
+- from .cycle_b import ...
++ from .shared_hub import ...
+
+--- a/app/cycle_b.py
++++ b/app/cycle_b.py
+- from .cycle_a import ...
++ from .shared_hub import ...
+
+note: extraction resolves cycles caused by a shared contract. If these
+files are truly mutually recursive in logic, extraction only relocates
+the knot — consider merging the files or inverting one call instead.

@@ -1,0 +1,13 @@
+{
+  "include": ["app/**/*.py"],
+  "exclude": [],
+  "roles": [
+    { "glob": "app/main.py", "role": "hub" },
+    { "glob": "app/**", "role": "spoke" }
+  ],
+  "defaultRole": "unmarked",
+  "strictCycles": true,
+  "singleExport": "warn",
+  "typeOnlyEdges": "ignore",
+  "externalPackages": "ignore"
+}

@@ -21,7 +21,9 @@ src/types.ts          (spoke via `// @spokes spoke` pragma; pure types, zero imp
 src/core/config.ts     (spoke) -- loads + hand-validates spokes.config.json
 src/core/roles.ts       (spoke) -- pragma + config-glob role resolution
 src/core/parser.ts      (spoke) -- TS compiler API AST walk: imports/exports
+src/core/parser-py.ts   (spoke) -- hand-rolled Python import/export scanner (string-masked, line-based)
 src/core/resolver.ts    (spoke) -- ts.resolveModuleName-based specifier resolution
+src/core/resolver-py.ts (spoke) -- filesystem-based dotted-specifier resolution (mod.py / pkg/__init__.py)
 src/rules/r1-spoke-outdegree.ts  (spoke) -- S001
 src/rules/r2-hub-indegree.ts     (spoke) -- S002
 src/rules/r3-acyclicity.ts       (spoke) -- S003, iterative 3-color DFS
@@ -57,9 +59,11 @@ design — see the plan's documented R4 interpretation for why a 0-count never t
 1. `cli.ts` parses argv via `commander`, resolves `repoRoot = process.cwd()`.
 2. `loadConfig(repoRoot)` (`core/config.ts`) reads and hand-validates `spokes.config.json`.
 3. `buildGraph(config, repoRoot)` (`graph-builder.ts`) globs files via `fast-glob`, parses each
-   with `core/parser.ts`, resolves each import specifier with `core/resolver.ts`, and resolves
-   each file's role with `core/roles.ts`. Returns `{ graph, resolveWarnings }` — `resolveWarnings`
-   are `E-RESOLVE` diagnostics for relative imports that couldn't be resolved.
+   with `core/parser.ts` (`.py` files: `core/parser-py.ts`), resolves each import specifier with
+   `core/resolver.ts` (`.py`: `core/resolver-py.ts`), and resolves each file's role with
+   `core/roles.ts`. Language dispatch is a per-file extension check inside `graph-builder.ts` —
+   everything downstream of the graph is language-agnostic. Returns `{ graph, resolveWarnings }` —
+   `resolveWarnings` are `E-RESOLVE` diagnostics for relative imports that couldn't be resolved.
 4. Command modules (`check`, `graph`, `suggest`, `explain`) receive `graph`/`config` as arguments
    and independently invoke the rule modules they need (`check`/`explain` run all of R1–R4;
    `suggest` only needs `r3-acyclicity.ts`'s cycle list).

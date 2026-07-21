@@ -23,6 +23,14 @@ function reconstructSpecifier(fromPath: string, toPath: string): string {
   while (i < fromDir.length && i < toParts.length - 1 && fromDir[i] === toParts[i]) i++;
   const ups = fromDir.length - i;
   const downs = toParts.slice(i);
+  if (toPath.endsWith('.py')) {
+    // Python relative form: one dot = same package, each extra dot = one level
+    // up; a package's __init__.py collapses to the package itself.
+    const last = downs[downs.length - 1].replace(/\.py$/, '');
+    if (last === '__init__') downs.pop();
+    else downs[downs.length - 1] = last;
+    return '.'.repeat(ups + 1) + downs.join('.');
+  }
   let result = (ups > 0 ? '../'.repeat(ups) : './') + downs.join('/');
   result = result.replace(/\.(tsx|mts|cts|jsx|mjs|cjs|ts|js)$/, '');
   if (!result.startsWith('.')) result = `./${result}`;
@@ -31,19 +39,24 @@ function reconstructSpecifier(fromPath: string, toPath: string): string {
 
 function buildProposal(graph: Graph, cycle: Cycle): SuggestProposal {
   const commonDir = longestCommonDir(cycle.members);
-  const hubPath = `${commonDir}/shared.hub.ts`;
+  // Cross-language imports don't exist, so a cycle is always single-language.
+  const isPy = cycle.members[0].endsWith('.py');
+  const hubPath = `${commonDir}/${isPy ? 'shared_hub.py' : 'shared.hub.ts'}`;
 
   const exportSet = new Set<string>();
   for (const member of cycle.members) {
     for (const name of graph.nodes.get(member)?.exports ?? []) exportSet.add(name);
   }
 
+  const importLine = (from: string, to: string): string =>
+    isPy ? `from ${reconstructSpecifier(from, to)} import ...` : `import ... from '${reconstructSpecifier(from, to)}';`;
+
   const changes = cycle.members.map((member, i) => {
     const next = cycle.members[(i + 1) % cycle.members.length];
     return {
       path: member,
-      oldLine: `import ... from '${reconstructSpecifier(member, next)}';`,
-      newLine: `import ... from '${reconstructSpecifier(member, hubPath)}';`,
+      oldLine: importLine(member, next),
+      newLine: importLine(member, hubPath),
     };
   });
 

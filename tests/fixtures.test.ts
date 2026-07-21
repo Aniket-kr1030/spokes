@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -53,12 +53,15 @@ describe('fixtures (PRD §11 acceptance tests)', () => {
     });
   }
 
-  it('f05-three-cycle: suggest emits a 3-file preview + hub stub', () => {
-    const fixtureDir = join(FIXTURES_DIR, 'f05-three-cycle');
-    const expected = readFileSync(join(fixtureDir, 'expected-suggest.txt'), 'utf8');
-    const { stdout } = runCli(['suggest'], fixtureDir);
-    expect(stdout.trimEnd()).toBe(expected.trimEnd());
-  });
+  // f05 covers the TS extraction preview; f11 the Python-style one.
+  for (const name of fixtureNames.filter((n) => existsSync(join(FIXTURES_DIR, n, 'expected-suggest.txt')))) {
+    it(`${name}: suggest output matches expected-suggest.txt`, () => {
+      const fixtureDir = join(FIXTURES_DIR, name);
+      const expected = readFileSync(join(fixtureDir, 'expected-suggest.txt'), 'utf8');
+      const { stdout } = runCli(['suggest'], fixtureDir);
+      expect(stdout.trimEnd()).toBe(expected.trimEnd());
+    });
+  }
 
   it('f07-type-only: flipping typeOnlyEdges to "count" makes the type-only edge real and triggers S001', () => {
     const fixtureDir = join(FIXTURES_DIR, 'f07-type-only');

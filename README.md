@@ -1,6 +1,6 @@
 # spokes
 
-**v1.0.4** — A dependency-shape linter that draws your architecture.
+**v1.1.0** — A dependency-shape linter that draws your architecture.
 
 Agents working in a `spokes`-clean repo can load exactly one file plus one interface to act
 safely, because blast radius is bounded by construction — a hub has at most one caller, a spoke
@@ -30,6 +30,7 @@ every diagram is deterministic: same repo in, byte-identical output out.
 - [Reading the diagram](#reading-the-diagram)
 - [Configuration](#configuration)
 - [Role declaration](#role-declaration)
+- [Python support](#python-support)
 - [Diagnostic codes](#diagnostic-codes)
 - [CI integration](#ci-integration)
 - [How it works](#how-it-works)
@@ -40,7 +41,10 @@ every diagram is deterministic: same repo in, byte-identical output out.
 ## What this is for
 
 `spokes` works on any TypeScript/JavaScript repository with a static import graph
-(`import`/`export`/dynamic `import()`/`require`). It's **incrementally adoptable** — unmarked
+(`import`/`export`/dynamic `import()`/`require`) and on Python repositories (`import a.b`,
+`from x import y`, relative imports — see [Python support](#python-support)). Mixed TS+Python
+repos work too; each file is parsed by its own language's scanner and everything meets in one
+graph. It's **incrementally adoptable** — unmarked
 files are exempt from the degree rules by default, so you can turn it on in an existing codebase
 and mark files hub/spoke one directory at a time, instead of needing a green field to start.
 
@@ -65,7 +69,7 @@ It's a poor fit for:
   Principle this tool enforces doesn't fit every domain, and you'll spend more time fighting the
   linter than benefiting from it. Mark those files `unmarked` (the default) rather than forcing
   them into a shape they don't want.
-- **Non-TS/JS codebases.** v1 is TS/JS only (see [Roadmap](#roadmap)).
+- **Codebases in languages other than TS/JS and Python.** (see [Roadmap](#roadmap)).
 
 ## For AI agents
 
@@ -276,22 +280,63 @@ autocomplete):
 
 Two mechanisms, checked in this priority order:
 
-1. **File pragma** — a comment in the file's first 5 lines:
+1. **File pragma** — a comment in the file's first 5 lines, in the file's own comment syntax:
 
    ```ts
    // @spokes hub
    ```
 
-   or
-
-   ```ts
-   // @spokes spoke
+   ```py
+   # @spokes spoke
    ```
 
 2. **Config glob** — the `roles` array above, first match wins.
 
 If neither applies, the file is `unmarked`. **File pragmas always win over the config's `roles`
 glob list** — use a pragma when one specific file needs to diverge from its directory's default.
+
+## Python support
+
+All four rules, all four commands, and the diagram work identically on Python — the only
+language-specific part of the pipeline is how imports are read and resolved. No Python
+interpreter is involved: imports are parsed by a hand-rolled scanner (the same philosophy as the
+TS side, which is syntactic-only and skips the type-checker). The concept mapping:
+
+| Concept | TS/JS | Python |
+|---|---|---|
+| Import edge | `import` / `export from` / `require()` / dynamic `import()` | `import a.b`, `from x import y`, relative `from . import y` |
+| Type-only edge (`typeOnlyEdges`) | `import type { T }` | any import inside an `if TYPE_CHECKING:` block |
+| Export count (R4) | value-export names | `__all__` entries if a literal `__all__ = [...]` exists, else public (non-`_`) top-level `def` / `class` names |
+| Role pragma | `// @spokes hub` | `# @spokes hub` |
+| External package (never an edge) | bare specifier → `node_modules` | absolute import not found in the repo (stdlib / installed packages) |
+| Repo root marker | `package.json` | `pyproject.toml` (a `spokes.config.json` alone also works) |
+
+A Python (or mixed) repo needs nothing special — point `include` at your `.py` files:
+
+```json
+{
+  "include": ["app/**/*.py"],
+  "roles": [
+    { "glob": "app/main.py", "role": "hub" },
+    { "glob": "app/**", "role": "spoke" }
+  ]
+}
+```
+
+Resolution details worth knowing:
+
+- `from pkg import thing` names either a submodule or a symbol; `spokes` tries `pkg/thing.py`
+  first and falls back to `pkg/__init__.py`, matching Python's own import machinery.
+- Absolute imports are resolved against the repo root and `<root>/src` (the two common layouts).
+  Anything not found there is treated as external, like a bare specifier on the TS side.
+- Cycles among `.py` files get Python-style `spokes suggest` previews (a `shared_hub.py` with a
+  `# @spokes hub` pragma).
+
+Known limitations: dynamic imports (`importlib.import_module`, `__import__`) are invisible;
+`__all__` built by mutation (`+=`, `.extend`) is ignored (only a single literal assignment
+counts); namespace packages without `__init__.py` can't anchor `from . import name` fallbacks;
+`sys.path` customization and editable-install path mappings are not consulted. See
+`fixtures/f11-python/` for a small worked example exercising all four rules.
 
 ## Diagnostic codes
 
@@ -319,9 +364,11 @@ specifically so it's safe to parse without pinning to a specific `spokes` patch 
 
 Full internals — module map, why the architecture is shaped the way it is, data flow, testing
 strategy — are documented in [`docs/ARCHI.md`](docs/ARCHI.md). Short version: `spokes` parses
-files with the TypeScript compiler API (syntactic only, no type-checker, for speed), resolves
-imports via `ts.resolveModuleName` (so `tsconfig.json` `paths` aliases work), builds an in-memory
-graph, and runs four independent rule modules against it. Rendering (Mermaid, DOT, the
+TS/JS files with the TypeScript compiler API (syntactic only, no type-checker, for speed) and
+resolves their imports via `ts.resolveModuleName` (so `tsconfig.json` `paths` aliases work);
+Python files go through a hand-rolled scanner and filesystem resolver (see
+[Python support](#python-support)). Both feed one in-memory graph, and four independent rule
+modules run against it. Rendering (Mermaid, DOT, the
 interactive HTML viewer) is a pure projection of that same graph — nothing about the diagram is
 hand-maintained or can drift from what the checker sees.
 
@@ -360,11 +407,12 @@ Before opening a PR:
 ## Roadmap
 
 Shipped (v1, M0–M2): parsing, resolution, the four rules, `--json`, deterministic Mermaid/DOT/HTML
-rendering, `suggest` previews.
+rendering, `suggest` previews. Shipped in v1.1: Python support (see
+[Python support](#python-support)).
 
 Explicitly reserved, not built yet (M3): `suggest --write` (auto-applying the extraction), watch
-mode, incremental (Pearce–Kelly) cycle checking for very large repos, a Python adapter, an
-editor/LSP integration.
+mode, incremental (Pearce–Kelly) cycle checking for very large repos, adapters for further
+languages, an editor/LSP integration.
 
 ## License
 

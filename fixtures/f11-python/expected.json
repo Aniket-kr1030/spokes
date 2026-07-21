@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "errors": [
+    {
+      "code": "S001",
+      "message": "spoke has 2 outgoing edges (max 1)\n  --> app/services/beta.py\n  edge 1 → app/services/alpha.py (imported at beta.py:1)\n  edge 2 → app/util.py           (imported at beta.py:2)\n  help: mark this file as a hub (`# @spokes hub`) if it is exclusively\n        owned by one caller, or route these through a shared hub file.",
+      "primary": {
+        "file": "app/services/beta.py",
+        "line": 1,
+        "col": 1
+      },
+      "related": [
+        {
+          "file": "app/services/beta.py",
+          "line": 1,
+          "col": 1
+        },
+        {
+          "file": "app/services/beta.py",
+          "line": 2,
+          "col": 1
+        }
+      ]
+    },
+    {
+      "code": "S002",
+      "message": "hub has 2 incoming edges (max 1)\n  --> app/overused.py\n  caller 1: app/extra_user.py:1\n  caller 2: app/main.py:5\n  help: a hub must have at most one owner. Either give it a single owner,\n        or split it, or re-mark it as a spoke and reduce its dependencies.",
+      "primary": {
+        "file": "app/overused.py",
+        "line": 1,
+        "col": 1
+      },
+      "related": [
+        {
+          "file": "app/extra_user.py",
+          "line": 1,
+          "col": 1
+        },
+        {
+          "file": "app/main.py",
+          "line": 5,
+          "col": 1
+        }
+      ]
+    },
+    {
+      "code": "S003",
+      "message": "circular dependency (2 files)\n  cycle: app/cycle_a.py → app/cycle_b.py → app/cycle_a.py\n  closing edge: app/cycle_b.py:1 imports '.cycle_a'\n  help: run `spokes suggest` for an extraction plan.",
+      "primary": {
+        "file": "app/cycle_b.py",
+        "line": 1,
+        "col": 1
+      },
+      "related": []
+    }
+  ],
+  "warnings": [
+    {
+      "code": "S004",
+      "message": "file exports 2 symbols; spokes files should expose one interface\n  --> app/util.py  (exports: helper, extra)",
+      "primary": {
+        "file": "app/util.py",
+        "line": 1,
+        "col": 1
+      },
+      "related": []
+    }
+  ],
+  "stats": {
+    "nodes": 10,
+    "edges": 10,
+    "hubs": 2,
+    "spokes": 8,
+    "unmarked": 0
+  }
+}

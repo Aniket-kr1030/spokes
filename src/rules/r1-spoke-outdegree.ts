@@ -3,13 +3,15 @@ import type { Diagnostic, Graph, Loc, SpokesConfig } from '../types.js';
 
 function buildMessage(spokePath: string, outEdges: { to: string; loc: Loc }[]): string {
   const maxLen = Math.max(...outEdges.map((e) => e.to.length));
+  // The pragma spelled in the help line uses the flagged file's own comment syntax.
+  const pragma = spokePath.endsWith('.py') ? '# @spokes hub' : '// @spokes hub';
   const lines = [
     `spoke has ${outEdges.length} outgoing edges (max 1)`,
     `  --> ${spokePath}`,
     ...outEdges.map(
       (e, i) => `  edge ${i + 1} → ${e.to.padEnd(maxLen + 1)}(imported at ${basename(e.loc.file)}:${e.loc.line})`,
     ),
-    '  help: mark this file as a hub (`// @spokes hub`) if it is exclusively',
+    `  help: mark this file as a hub (\`${pragma}\`) if it is exclusively`,
     '        owned by one caller, or route these through a shared hub file.',
   ];
   return lines.join('\n');

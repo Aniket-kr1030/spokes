@@ -5,7 +5,7 @@ const CONFIG_FILENAME = 'spokes.config.json';
 
 const DEFAULT_CONFIG = {
   $schema: './node_modules/spokes-ai-humanism/schema.json',
-  include: ['src/**/*.{ts,tsx,js,jsx,mts,cts,mjs,cjs}'],
+  include: ['src/**/*.{ts,tsx,js,jsx,mts,cts,mjs,cjs,py}'],
   exclude: ['**/*.test.*', '**/*.spec.*', '**/node_modules/**', '**/dist/**'],
   roles: [
     { glob: 'src/hubs/**', role: 'hub' },
