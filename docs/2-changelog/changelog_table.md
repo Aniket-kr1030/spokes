@@ -2,6 +2,7 @@
 
 | Version | Week | Object |
 |---|---|---|
+| `1.1.1` | 1 | Sanitize graph ids so Next.js route-group / dynamic-segment paths render |
 | `1.1.0` | 1 | Python language support (check/graph/suggest/explain on Python and mixed repos) |
 | `1.0.4` | 1 | Rename npm package to spokes-ai-humanism (name collision on the registry) |
 | `1.0.3` | 1 | Fix graph structure and navigability (clustering, click-to-focus, line routing) |
@@ -11,6 +12,12 @@
 
 ## Changelog Summary
 
+- **v1.1.1** (Week 1, 21-07-2026) — Patch. `spokes graph` produced an unparseable diagram
+  ("Syntax error in text", blank pane) on repos with `()`/`[]` in paths — Next.js route groups
+  (`app/(app)/...`) and dynamic segments (`[id]`, `[...path]`). `nodeId()` now collapses every
+  non-`[A-Za-z0-9_]` char to `_` in both `render/mermaid.ts` and `render/dot.ts`; labels keep the
+  real path, and the click-to-focus SVG-id contract stays intact. See
+  `docs/2-changelog/w1_v1.1.1.md`.
 - **v1.1.0** (Week 1, 21-07-2026) — Minor. Python language support: a hand-rolled import/export
   scanner and filesystem resolver (`src/core/parser-py.ts` / `resolver-py.ts`) feed the same
   graph and rules; `# @spokes` pragmas, `pyproject.toml` root detection, TYPE_CHECKING as

@@ -1,6 +1,6 @@
 {
   "name": "spokes-ai-humanism",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "A dependency-shape linter that draws your architecture",
   "type": "module",
   "license": "MIT",

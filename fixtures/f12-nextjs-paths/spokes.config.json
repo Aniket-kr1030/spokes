@@ -1,0 +1,10 @@
+{
+  "include": ["app/**/*.{ts,tsx}", "lib/**/*.ts"],
+  "exclude": [],
+  "roles": [{ "glob": "**", "role": "spoke" }],
+  "defaultRole": "unmarked",
+  "strictCycles": true,
+  "singleExport": "off",
+  "typeOnlyEdges": "ignore",
+  "externalPackages": "ignore"
+}

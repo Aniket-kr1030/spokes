@@ -6,8 +6,11 @@ const ROLE_STYLE: Record<string, { fill: string; stroke: string }> = {
   unmarked: { fill: '#F1EFE8', stroke: '#5F5E5A' },
 };
 
+// Mirrors render/mermaid.ts's nodeId (deliberately duplicated, per the spoke
+// single-import constraint). Collapsing every non-word character keeps DOT ids
+// robust to paths with parens/brackets (Next.js route groups & dynamic segments).
 function nodeId(path: string): string {
-  return path.replace(/[/.]/g, '_');
+  return path.replace(/[^A-Za-z0-9_]/g, '_');
 }
 
 function violatingPaths(checkResult: CheckResult): Set<string> {

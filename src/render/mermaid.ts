@@ -6,8 +6,14 @@ const ROLE_STYLE: Record<string, { fill: string; stroke: string }> = {
   unmarked: { fill: '#F1EFE8', stroke: '#5F5E5A' },
 };
 
+// Any character outside [A-Za-z0-9_] must be collapsed to '_': Mermaid reserves
+// (), [], {} for node-shape syntax, so a Next.js route group (app/(app)/...) or
+// dynamic segment (app/[id]/..., app/[...path]/...) left raw makes the whole
+// flowchart a syntax error. Restricting the id to word characters also keeps it
+// verbatim in Mermaid's rendered SVG element ids, which render/html.ts parses
+// back out for click-to-focus — a char Mermaid rewrote there would desync it.
 function nodeId(path: string): string {
-  return path.replace(/[/.]/g, '_');
+  return path.replace(/[^A-Za-z0-9_]/g, '_');
 }
 
 function dirOf(path: string): string {
