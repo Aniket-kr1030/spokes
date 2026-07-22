@@ -2,6 +2,7 @@
 
 | Version | Week | Object |
 |---|---|---|
+| `1.1.3` | 1 | Ignore local workflow tooling; validate Python support on a real codebase |
 | `1.1.2` | 1 | Close explain/init/graph-split coverage gaps; sanitize split-diagram filenames |
 | `1.1.1` | 1 | Sanitize graph ids so Next.js route-group / dynamic-segment paths render |
 | `1.1.0` | 1 | Python language support (check/graph/suggest/explain on Python and mixed repos) |
@@ -13,6 +14,11 @@
 
 ## Changelog Summary
 
+- **v1.1.3** (Week 1, 21-07-2026) — Patch, no runtime change. `.agents/` and `HANDOFF.md` added
+  to `.gitignore` (local workflow tooling, never part of the published package). First real-world
+  validation of v1.1.0's Python support: a 71-file FastAPI backend resolved to 43 nodes / 73
+  edges with **zero** unresolved imports, all applicable rules firing correctly, and the graph
+  rendering cleanly. No defects found. See `docs/2-changelog/w1_v1.1.3.md`.
 - **v1.1.2** (Week 1, 21-07-2026) — Patch. Completeness audit follow-up: no stubs found, but
   `graph.ts`'s >300-node split path still built filenames with the stale `[/.]` sanitization
   (`spokes-graph-src_(app).html`), and `explain`, `init`, and the split path had no tests at all.

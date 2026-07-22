@@ -1,5 +1,11 @@
 dist/
 node_modules/
+
+# Local workflow tooling (TRIP skills ported to Antigravity's format) — not part
+# of the published package or the public project surface.
+.agents/
+HANDOFF.md
+
 spokes-graph.mmd
 spokes-graph.html
 spokes-graph-*.mmd
