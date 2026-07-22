@@ -78,8 +78,11 @@ export function run(graph: Graph, checkResult: CheckResult, opts: GraphOpts): vo
     `spokes: ${nodeCount} nodes exceeds ${MAX_NODES_PER_DIAGRAM} — writing one diagram per top-level directory plus an overview.`,
   );
 
+  // Same word-only sanitization the renderers apply to ids (see render/mermaid.ts):
+  // a top-level group can be a Next.js route group like `src/(app)`, and those
+  // characters have no business in a generated filename.
   for (const [dir, paths] of [...groups].sort((a, b) => (a[0] < b[0] ? -1 : 1))) {
-    writeOne(`spokes-graph-${dir.replace(/[/.]/g, '_')}`, subgraphFor(graph, paths));
+    writeOne(`spokes-graph-${dir.replace(/[^A-Za-z0-9_]/g, '_')}`, subgraphFor(graph, paths));
   }
   writeOne('spokes-graph-overview', overviewGraph(graph, groups));
 }

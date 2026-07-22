@@ -2,6 +2,7 @@
 
 | Version | Week | Object |
 |---|---|---|
+| `1.1.2` | 1 | Close explain/init/graph-split coverage gaps; sanitize split-diagram filenames |
 | `1.1.1` | 1 | Sanitize graph ids so Next.js route-group / dynamic-segment paths render |
 | `1.1.0` | 1 | Python language support (check/graph/suggest/explain on Python and mixed repos) |
 | `1.0.4` | 1 | Rename npm package to spokes-ai-humanism (name collision on the registry) |
@@ -12,6 +13,11 @@
 
 ## Changelog Summary
 
+- **v1.1.2** (Week 1, 21-07-2026) — Patch. Completeness audit follow-up: no stubs found, but
+  `graph.ts`'s >300-node split path still built filenames with the stale `[/.]` sanitization
+  (`spokes-graph-src_(app).html`), and `explain`, `init`, and the split path had no tests at all.
+  Filename sanitization aligned with the renderers; 9 new tests. See
+  `docs/2-changelog/w1_v1.1.2.md`.
 - **v1.1.1** (Week 1, 21-07-2026) — Patch. `spokes graph` produced an unparseable diagram
   ("Syntax error in text", blank pane) on repos with `()`/`[]` in paths — Next.js route groups
   (`app/(app)/...`) and dynamic segments (`[id]`, `[...path]`). `nodeId()` now collapses every
