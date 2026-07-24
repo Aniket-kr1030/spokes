@@ -4,6 +4,23 @@ import type { SpokesConfig, RoleGlob, Role, SingleExportLevel, TypeOnlyEdges } f
 
 const CONFIG_FILENAME = 'spokes.config.json';
 
+// Vendored / build / virtual-env directories are never part of a project's own
+// dependency shape. They are ALWAYS excluded and merged into the effective
+// exclude list even when a config supplies its own `exclude` (which otherwise
+// replaces the defaults), so scanning can never descend into them.
+const ALWAYS_EXCLUDE = [
+  '**/node_modules/**',
+  '**/.venv/**',
+  '**/venv/**',
+  '**/env/**',
+  '**/__pycache__/**',
+  '**/.git/**',
+  '**/dist/**',
+  '**/build/**',
+  '**/.tox/**',
+  '**/site-packages/**',
+];
+
 const DEFAULTS: SpokesConfig = {
   include: ['src/**/*.{ts,tsx,js,jsx,mts,cts,mjs,cjs,py}'],
   exclude: ['**/*.test.*', '**/*.spec.*', '**/node_modules/**', '**/dist/**'],
@@ -73,7 +90,9 @@ function parseConfig(raw: unknown): SpokesConfig {
   const obj = raw as Record<string, unknown>;
 
   const include = 'include' in obj ? validateStringArray(obj.include, 'include') : DEFAULTS.include;
-  const exclude = 'exclude' in obj ? validateStringArray(obj.exclude, 'exclude') : DEFAULTS.exclude;
+  const userExclude = 'exclude' in obj ? validateStringArray(obj.exclude, 'exclude') : DEFAULTS.exclude;
+  // Always ignore vendor/build/venv dirs, regardless of the config's own exclude.
+  const exclude = Array.from(new Set([...ALWAYS_EXCLUDE, ...userExclude]));
   const roles = 'roles' in obj ? validateRoles(obj.roles, 'roles') : DEFAULTS.roles;
   const defaultRole =
     'defaultRole' in obj
