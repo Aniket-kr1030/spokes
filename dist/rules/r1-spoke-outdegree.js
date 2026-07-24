@@ -1,0 +1,39 @@
+import { basename } from 'node:path';
+function buildMessage(spokePath, outEdges) {
+    const maxLen = Math.max(...outEdges.map((e) => e.to.length));
+    // The pragma spelled in the help line uses the flagged file's own comment syntax.
+    const pragma = spokePath.endsWith('.py') ? '# @spokes hub' : '// @spokes hub';
+    const lines = [
+        `spoke has ${outEdges.length} outgoing edges (max 1)`,
+        `  --> ${spokePath}`,
+        ...outEdges.map((e, i) => `  edge ${i + 1} → ${e.to.padEnd(maxLen + 1)}(imported at ${basename(e.loc.file)}:${e.loc.line})`),
+        `  help: mark this file as a hub (\`${pragma}\`) if it is exclusively`,
+        '        owned by one caller, or route these through a shared hub file.',
+    ];
+    return lines.join('\n');
+}
+/** Exports exactly one function, satisfying R4: `check(graph, config): Diagnostic[]`. */
+export function check(graph, config) {
+    void config;
+    const diagnostics = [];
+    const spokePaths = [...graph.nodes.values()]
+        .filter((n) => n.role === 'spoke')
+        .map((n) => n.path)
+        .sort();
+    for (const spokePath of spokePaths) {
+        const outEdges = graph.edges
+            .filter((e) => e.from === spokePath)
+            .map((e) => ({ to: e.to, loc: e.locations[0] }))
+            .sort((a, b) => (a.to < b.to ? -1 : a.to > b.to ? 1 : 0));
+        if (outEdges.length > 1) {
+            diagnostics.push({
+                code: 'S001',
+                message: buildMessage(spokePath, outEdges),
+                primary: { file: spokePath, line: 1, col: 1 },
+                related: outEdges.map((e) => e.loc),
+                severity: 'error',
+            });
+        }
+    }
+    return diagnostics;
+}

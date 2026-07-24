@@ -1,4 +1,3 @@
-dist/
 node_modules/
 
 # Local workflow tooling (TRIP skills ported to Antigravity's format) — not part
