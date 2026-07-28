@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
+import { realpathSync } from 'node:fs';
 import { relative, resolve, sep } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { loadConfig } from './core/config.js';
 import { buildGraph } from './graph-builder.js';
 import { check as checkR1 } from './rules/r1-spoke-outdegree.js';
@@ -137,7 +139,27 @@ export async function main(argv) {
     }
     return exitCode;
 }
-if (process.argv[1] && import.meta.url === `file://${process.argv[1]}`) {
+/**
+ * True when this module was executed directly (rather than imported).
+ *
+ * Compares fully-resolved file URLs: a global install puts a SYMLINK on PATH
+ * (e.g. /opt/homebrew/bin/spokes -> .../dist/cli.js), so `process.argv[1]` is
+ * the link while `import.meta.url` is the real path. Naive string comparison
+ * therefore never matched and the CLI exited 0 having done nothing. realpath
+ * resolves the link, and pathToFileURL encodes paths containing spaces.
+ */
+function isDirectRun() {
+    const entry = process.argv[1];
+    if (!entry)
+        return false;
+    try {
+        return import.meta.url === pathToFileURL(realpathSync(entry)).href;
+    }
+    catch {
+        return false;
+    }
+}
+if (isDirectRun()) {
     main(process.argv).then((code) => {
         process.exitCode = code;
     });
